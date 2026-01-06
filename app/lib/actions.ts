@@ -7,11 +7,24 @@ import { z } from 'zod';
 
 const formSchema = z.object({
     id : z.string(),
-    customerId : z.string(),
-    amount : z.coerce.number(),
-    status : z.enum(['paid','pending']),
+    customerId : z.string({
+        'invalid_type_error' : "Please select a customer"
+    }),
+    amount : z.coerce.number().gt(0, "Please enter an amount greater than $0"),
+    status : z.enum(['paid','pending'], {
+        'invalid_type_error' : "Please select a status"
+    }),
     date : z.string()
 })
+
+export type State  = {
+    errors? : {
+        customerId?: string[],
+        amount?: string[],
+        status?: string[]
+    },
+    message?: null | string
+}
 
 const sql = postgres(process.env.POSTGRES_URL!,{
     ssl : 'require',
@@ -22,10 +35,18 @@ const sql = postgres(process.env.POSTGRES_URL!,{
 
 const CreateInvoice = formSchema.omit({id : true, date : true})
 
-export async function createInvoice (formData: FormData) {
+export async function createInvoice (prevState: State,formData: FormData) {
     const rawFormData = Object.fromEntries(formData.entries()); // Convert FormData to a plain object
-    const {customerId, amount, status} = CreateInvoice.parse(rawFormData);
+    const validatedFields = CreateInvoice.safeParse(rawFormData);
    
+    if (validatedFields.error) {
+
+        return  {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create Invoice.'
+        }
+    }
+    const {customerId,amount,status} = validatedFields.data
     const amountInCents = amount * 100;
     const date = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
 
@@ -44,12 +65,22 @@ export async function createInvoice (formData: FormData) {
     
 }
 
-export async function updateInvoice(id:string,formData: FormData) {
+const UpdateInvoice = formSchema.omit({ date : true})
+
+export async function updateInvoice(prevState: State,formData: FormData) {
     const rawFormData = Object.fromEntries(formData.entries())
-    const {customerId,amount,status} = CreateInvoice.parse(rawFormData)
+
+    const validatedFields = UpdateInvoice.safeParse(rawFormData);
+
+    if (validatedFields.error) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Invoice updating failed!'
+        }
+    }
+    const {customerId,amount,status, id} = validatedFields.data
 
     const amountInCents = amount * 100;
-    const date = new Date().toISOString().split('T')[0];
 
     try {
         await sql`
@@ -67,7 +98,7 @@ export async function updateInvoice(id:string,formData: FormData) {
 }
 
 export async function deleteInvoice (id: string) {
-    throw new Error('Deleting failed')
+   
     try {
         await sql`
         DELETE FROM invoices WHERE id=${id}
