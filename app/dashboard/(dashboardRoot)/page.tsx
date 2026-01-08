@@ -4,6 +4,13 @@ import LatestInvoices from "../../ui/dashboard/latest-invoices";
 import RevenueChart from "../../ui/dashboard/revenue-chart";
 import { lusitana } from "../../ui/fonts"
 import { CardsSkeleton, LatestInvoicesSkeleton, RevenueChartSkeleton } from "@/app/ui/skeletons";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title : "Dashboard",
+  description : "Manage everything here.",
+  metadataBase : new URL("https://next-dashboard-mm.vercel.app/dashboard")
+}
 
 const Page = async () => {
 
