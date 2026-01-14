@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import AcmeLogo from '@/app/ui/acme-logo';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
@@ -7,10 +7,7 @@ import styles from '@/app/ui/home.module.css';
 import Image from 'next/image';
 import { authenticate } from './lib/actions';
 import { Suspense, useActionState } from 'react';
-import { useSearchParams } from 'next/navigation';
 export default function Page() {
-  const searchParam = useSearchParams();
-  const callBackUrl = searchParam.get('callBackUrl') || '/dashboard';
   const [ errorMessage, formAction, isPending ] = useActionState(authenticate,undefined)
   return (
     <main className="flex min-h-screen flex-col p-6">
@@ -36,7 +33,7 @@ export default function Page() {
             <form action={formAction}>
             <input name='email' value="user@nextmail.com" type="hidden" />
             <input name='password' value="123456" type="hidden" />
-            <input type="hidden" name='redirectTo' value={callBackUrl} />
+            <input type="hidden" name='redirectTo' value='/dashboard' />
             <button className={` ${isPending ? 'cursor-wait bg-blue-300' : 'bg-blue-500 hover:bg-blue-400'} flex items-center gap-5 self-start rounded-lg  px-6 py-3 text-sm font-medium text-white transition-colors  md:text-base`}
           >
             {
