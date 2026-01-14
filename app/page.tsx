@@ -6,7 +6,7 @@ import Link from 'next/link';
 import styles from '@/app/ui/home.module.css';
 import Image from 'next/image';
 import { authenticate } from './lib/actions';
-import { useActionState } from 'react';
+import { Suspense, useActionState } from 'react';
 import { useSearchParams } from 'next/navigation';
 export default function Page() {
   const searchParam = useSearchParams();
@@ -32,7 +32,8 @@ export default function Page() {
             <span>Log in</span> <ArrowRightIcon className="w-5 md:w-6" />
           </Link> */}
 
-          <form action={formAction}>
+          <Suspense fallback={null}>
+            <form action={formAction}>
             <input name='email' value="user@nextmail.com" type="hidden" />
             <input name='password' value="123456" type="hidden" />
             <input type="hidden" name='redirectTo' value={callBackUrl} />
@@ -43,6 +44,7 @@ export default function Page() {
             }
           </button>
           </form>
+          </Suspense>
         </div>
         <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
           <Image
